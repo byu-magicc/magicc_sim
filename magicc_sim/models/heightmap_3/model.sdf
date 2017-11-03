@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
-<sdf version="1.3">
-  <model name="heightmap">
+<sdf version="1.4">
+  <model name="heightmap_3">
     <static>true</static>
     <link name="link">
       <collision name="collision">
         <geometry>
           <heightmap>
-            <uri>model://vrc_heightmap_2/materials/textures/heightmap.png</uri>
+            <uri>model://heightmap_3/materials/textures/heightmap.png</uri>
             <size>100 100 3.5</size>
             <pos>0 0 -0.6</pos>
           </heightmap>
@@ -39,7 +39,7 @@
               <min_height>2.2</min_height>
               <fade_dist>1</fade_dist>
             </blend>
-            <uri>model://vrc_heightmap_2/materials/textures/heightmap.png</uri>
+            <uri>model://heightmap_3/materials/textures/heightmap.png</uri>
             <size>100 100 3.5</size>
             <pos>0 0 -0.6</pos>
           </heightmap>

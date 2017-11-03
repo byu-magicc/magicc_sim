@@ -30,5 +30,7 @@ catkin_package(
     roscpp
     sensor_msgs
     message_runtime
-  DEPENDS Eigen gazebo_ros
+  DEPENDS 
+    Eigen
+    gazebo_ros
 )

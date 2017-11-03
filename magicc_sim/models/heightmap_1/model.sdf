@@ -6,7 +6,7 @@
       <collision name="collision">
         <geometry>
           <heightmap>
-            <uri>model://vrc_heightmap_1/materials/textures/heightmap.png</uri>
+            <uri>model://heightmap_1/materials/textures/heightmap.png</uri>
             <size>500 500 118</size>
             <pos>0 0 -15</pos>
           </heightmap>
@@ -39,7 +39,7 @@
               <min_height>30</min_height>
               <fade_dist>10</fade_dist>
             </blend>
-            <uri>model://vrc_heightmap_1/materials/textures/heightmap.png</uri>
+            <uri>model://heightmap_1/materials/textures/heightmap.png</uri>
             <size>500 500 118</size>
             <pos>0 0 -15</pos>
           </heightmap>
