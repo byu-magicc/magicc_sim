@@ -4,7 +4,8 @@ project(magicc_sim)
 add_definitions(-std=c++11)
 
 find_package(catkin 
-  REQUIRED COMPONENTS 
+  REQUIRED COMPONENTS
+  gazebo_ros
   gazebo_msgs 
   geometry_msgs 
   roscpp 
@@ -15,6 +16,10 @@ find_package(catkin
 
 find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED)
+find_package(gazebo REQUIRED)
+
+link_directories(${GAZEBO_LIBRARY_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 
 # Configure Build
 catkin_package(
@@ -25,5 +30,7 @@ catkin_package(
     roscpp
     sensor_msgs
     message_runtime
-  DEPENDS Eigen
+  DEPENDS 
+    Eigen
+    gazebo_ros
 )
