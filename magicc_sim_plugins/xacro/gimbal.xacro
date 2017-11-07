@@ -7,7 +7,8 @@
       name="gimbal_ZENMUSE"
       params="namespace
               parent_link
-              camera_topic
+              image_topic
+              image_camera_info_topic
 	            frame_rate
               pose_topic
               command_topic
@@ -16,7 +17,8 @@
     <xacro:gimbal_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
-      camera_topic="${camera_topic}"
+      image_topic="${image_topic}"
+      image_camera_info_topic="${image_camera_info_topic}"
       frame_rate="${frame_rate}"
       pose_topic="${pose_topic}"
       command_topic="${command_topic}"
@@ -33,7 +35,7 @@
     <!-- Macro to add a Gimbal -->
   <xacro:macro
     name="gimbal_plugin_macro"
-    params="namespace parent_link camera_topic frame_rate pose_topic command_topic
+    params="namespace parent_link image_topic image_camera_info_topic frame_rate pose_topic command_topic
       mass x_rotation_range y_rotation_range z_rotation_range time_constant
       *inertia *origin">
 
@@ -128,8 +130,8 @@
           <alwaysOn>true</alwaysOn>
 	  <updateRate>${frame_rate}</updateRate>
           <cameraName>gimbal/camera</cameraName>
-          <imageTopicName>${camera_topic}</imageTopicName>
-          <cameraInfoTopicName>${camera_topic}/camera_info</cameraInfoTopicName>
+          <imageTopicName>${image_topic}</imageTopicName>
+          <cameraInfoTopicName>${image_camera_info_topic}</cameraInfoTopicName>
           <frameName>gimbal_camera</frameName>
           <distortionK1>0.0</distortionK1>
           <distortionK2>0.0</distortionK2>
