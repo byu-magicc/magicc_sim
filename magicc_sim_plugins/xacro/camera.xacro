@@ -10,7 +10,7 @@
             frame_rate
             rgb_range
             image_topic
-            image_camera_info_topic
+            camera_info_topic
             parent_link
             *origin">
     <link name="${namespace}/camera_base_link">
@@ -50,7 +50,7 @@
           <updateRate>${frame_rate}</updateRate>
           <cameraName>camera</cameraName>
           <imageTopicName>${image_topic}</imageTopicName>
-          <cameraInfoTopicName>${image_camera_info_topic}</cameraInfoTopicName>
+          <cameraInfoTopicName>${camera_info_topic}</cameraInfoTopicName>
           <frameName>/chase_camera_base_link</frameName>
           <distortionK1>0.0</distortionK1>
           <distortionK2>0.0</distortionK2>

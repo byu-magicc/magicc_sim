@@ -7,7 +7,8 @@
       name="gimbal_ZENMUSE"
       params="namespace
               parent_link
-              camera_topic
+              image_topic
+              camera_info_topic
 	            frame_rate
               pose_topic
               command_topic
@@ -16,7 +17,8 @@
     <xacro:gimbal_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
-      camera_topic="${camera_topic}"
+      image_topic="${image_topic}"
+      camera_info_topic="${camera_info_topic}"
       frame_rate="${frame_rate}"
       pose_topic="${pose_topic}"
       command_topic="${command_topic}"
@@ -33,7 +35,7 @@
     <!-- Macro to add a Gimbal -->
   <xacro:macro
     name="gimbal_plugin_macro"
-    params="namespace parent_link camera_topic frame_rate pose_topic command_topic
+    params="namespace parent_link image_topic camera_info_topic frame_rate pose_topic command_topic
       mass x_rotation_range y_rotation_range z_rotation_range time_constant
       *inertia *origin">
 
@@ -110,7 +112,7 @@
     <gazebo reference="${namespace}/gimbal/pitch_link">
       <sensor type="camera" name="gimbal/camera">
         <always_on>true</always_on>
-	<update_rate>${frame_rate}</update_rate>
+	      <update_rate>${frame_rate}</update_rate>
         <camera>
           <horizontal_fov>2</horizontal_fov>
           <image>
@@ -126,10 +128,10 @@
 	<plugin filename="libmagicc_sim_camera_plugin.so" name="${namespace}/gimbal_camera">
           <robotNamespace>${namespace}</robotNamespace>
           <alwaysOn>true</alwaysOn>
-	  <updateRate>${frame_rate}</updateRate>
+	        <updateRate>${frame_rate}</updateRate>
           <cameraName>gimbal/camera</cameraName>
-          <imageTopicName>${camera_topic}</imageTopicName>
-          <cameraInfoTopicName>${camera_topic}/camera_info</cameraInfoTopicName>
+          <imageTopicName>${image_topic}</imageTopicName>
+          <cameraInfoTopicName>${camera_info_topic}</cameraInfoTopicName>
           <frameName>gimbal_camera</frameName>
           <distortionK1>0.0</distortionK1>
           <distortionK2>0.0</distortionK2>
