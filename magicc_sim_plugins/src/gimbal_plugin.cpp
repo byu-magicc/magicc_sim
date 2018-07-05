@@ -196,9 +196,9 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   geometry_msgs::Vector3Stamped angles_msg;
   angles_msg.header.stamp.sec = world_->GetSimTime().sec;
   angles_msg.header.stamp.nsec = world_->GetSimTime().nsec;
-  angles_msg.vector.x = roll_actual_;
-  angles_msg.vector.y = pitch_actual_;
-  angles_msg.vector.z = yaw_actual_;
+  angles_msg.vector.x = roll_joint_->GetAngle(0).Radian();
+  angles_msg.vector.y = pitch_joint_->GetAngle(0).Radian();
+  angles_msg.vector.z = yaw_joint_->GetAngle(0).Radian();
   pose_pub_.publish(angles_msg);
 }
 
