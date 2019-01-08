@@ -11,6 +11,7 @@
 #include <gazebo/sensors/SensorManager.hh>
 #include <unistd.h>
 #include <math.h>
+#include <functional>
 
 #include <sensor_msgs/Illuminance.h>
 
@@ -23,7 +24,8 @@ StepCamera::StepCamera(){
 }
 
 StepCamera::~StepCamera(){
-    event::Events::DisconnectWorldUpdateBegin(_updateConnection);
+    _updateConnection.reset();
+    // event::Events::DisconnectWorldUpdateBegin(_updateConnection);
 }
 
 void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
@@ -47,16 +49,20 @@ void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     this->camera_ = this->camera;
 
     GazeboRosCameraUtils::Load(_parent, _sdf);
+    
+    #if GAZEBO_MAJOR_VERSION >= 8
+        float worldRate = physics::get_world()->Physics()->GetMaxStepSize();
+    #else
+        float worldRate = physics::get_world()->GetPhysicsEngine()->GetMaxStepSize();
+    #endif
 
-    float worldRate = physics::get_world()->GetPhysicsEngine()->GetMaxStepSize();
-
-    # if GAZEBO_MAJOR_VERSION >= 7
+    #if GAZEBO_MAJOR_VERSION >= 7
         std::string sensor_name = this->parentSensor_->Name();
         this->_updateRate = 1.0 / this->parentSensor_->UpdateRate();
-    # else
+    #else
         std::string sensor_name = this->parentSensor_->GetName();
         this->_updateRate  = 1.0 / this->parentSensor_->GetUpdateRate();
-    # endif
+    #endif
 
     if(std::ceil(this->_updateRate / worldRate) != this->_updateRate / worldRate){
         gzwarn << "The update rate of sensor " << sensor_name << " does not evenly divide into the "
@@ -79,12 +85,22 @@ void StepCamera::OnUpdateParentSensor(){
 }
 
 void StepCamera::OnUpdate(const common::UpdateInfo&){
-   if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (this->_updateRate) ){
-     // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
-     if(!this->_updateLock.timed_lock(boost::posix_time::seconds(this->_updateRate))){
-         ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
-     }
-   }
+    #if GAZEBO_MAJOR_VERSION >= 8
+        if(this->parentSensor->IsActive() && (this->world_->SimTime() - this->last_update_time_) >= (this->_updateRate) ){
+            // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
+            if(!this->_updateLock.timed_lock(boost::posix_time::seconds(this->_updateRate))){
+                ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
+            }
+        }
+    #else
+        if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (this->_updateRate) ){
+        // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
+            if(!this->_updateLock.timed_lock(boost::posix_time::seconds(this->_updateRate))){
+                ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
+            }
+        }
+    #endif
+
 }
 
 void StepCamera::Reset(){
@@ -97,7 +113,11 @@ void StepCamera::OnNewFrame(const unsigned char *_image,
     unsigned int _width, unsigned int _height, unsigned int _depth,
     const std::string &_format)
 {
-    common::Time current_time = this->world_->GetSimTime();
+    #if GAZEBO_MAJOR_VERSION >= 8
+        common::Time current_time = this->world_->SimTime();
+    #else
+        common::Time current_time = this->world_->GetSimTime();
+    #endif
 
     if (this->parentSensor->IsActive() && (current_time - this->last_update_time_) >= (this->_updateRate))
     {
