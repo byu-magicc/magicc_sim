@@ -15,13 +15,14 @@
  */
 
 #include "magicc_sim_plugins/gimbal_plugin.h"
+#include "magicc_sim_plugins/gz_compat.h"
 
 namespace gazebo {
 
 GimbalPlugin::GimbalPlugin() : ModelPlugin() {}
 
 GimbalPlugin::~GimbalPlugin() {
-  event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+  GZ_COMPAT_DISCONNECT_WORLD_UPDATE_BEGIN(updateConnection_);
   if (nh_) {
     nh_->shutdown();
     delete nh_;
@@ -142,9 +143,9 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 #endif
 
   // Set the axes of the gimbal
-  yaw_joint_->SetAxis(0, math::Vector3(0, 0, 1));
-  pitch_joint_->SetAxis(0, math::Vector3(0, 1, 0));
-  roll_joint_->SetAxis(0, math::Vector3(1, 0, 0));
+  yaw_joint_->SetAxis(0, GazeboVector(0, 0, 1));
+  pitch_joint_->SetAxis(0, GazeboVector(0, 1, 0));
+  roll_joint_->SetAxis(0, GazeboVector(1, 0, 0));
 
   // Initialize Time
   this->Reset();
@@ -166,11 +167,11 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   // Perform Control if auto stabilize flag is on
   if(auto_stabilize_)
   {
-    math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-    math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
-    double phi = euler_angles.x;
-    double theta = -euler_angles.y;
-    double psi = -euler_angles.z;
+    GazeboPose W_pose_W_C = GZ_COMPAT_GET_WORLD_COG_POSE(link_);
+    GazeboVector euler_angles = GZ_COMPAT_GET_EULER(GZ_COMPAT_GET_ROT(W_pose_W_C));
+    double phi = GZ_COMPAT_GET_X(euler_angles);
+    double theta = -GZ_COMPAT_GET_Y(euler_angles);
+    double psi = -GZ_COMPAT_GET_Z(euler_angles);
     yaw_desired_ = 0;
     pitch_desired_ = theta;
     roll_desired_ = -phi;
@@ -194,11 +195,11 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 
   // Publish ROS message of actual angles
   geometry_msgs::Vector3Stamped angles_msg;
-  angles_msg.header.stamp.sec = world_->GetSimTime().sec;
-  angles_msg.header.stamp.nsec = world_->GetSimTime().nsec;
-  angles_msg.vector.x = roll_joint_->GetAngle(0).Radian();
-  angles_msg.vector.y = pitch_joint_->GetAngle(0).Radian();
-  angles_msg.vector.z = yaw_joint_->GetAngle(0).Radian();
+  angles_msg.header.stamp.sec = GZ_COMPAT_GET_SIM_TIME(world_).sec;
+  angles_msg.header.stamp.nsec = GZ_COMPAT_GET_SIM_TIME(world_).nsec;
+  angles_msg.vector.x = GZ_COMPAT_GET_POSITION(roll_joint_, 0);
+  angles_msg.vector.y = GZ_COMPAT_GET_POSITION(pitch_joint_, 0);
+  angles_msg.vector.z = GZ_COMPAT_GET_POSITION(yaw_joint_, 0);
   pose_pub_.publish(angles_msg);
 }
 
