@@ -494,7 +494,8 @@ void GazeboRosCameraUtils::Init()
   else
   {
     // check against float precision
-    if (!GZ_COMPAT_EQUAL(this->focal_length_, computed_focal_length))
+    bool compare = GZ_COMPAT_EQUAL(this->focal_length_, computed_focal_length);
+    if (!compare)
     {
       ROS_WARN("The <focal_length>[%f] you have provided for camera_ [%s]"
                " is inconsistent with specified image_width [%d] and"
