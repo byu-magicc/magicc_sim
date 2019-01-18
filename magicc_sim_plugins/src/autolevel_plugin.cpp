@@ -15,13 +15,14 @@
  */
 
 #include "magicc_sim_plugins/autolevel_plugin.h"
+#include "magicc_sim_plugins/gz_compat.h"
 
 namespace gazebo {
 
 AutoLevelPlugin::AutoLevelPlugin() : ModelPlugin() {}
 
 AutoLevelPlugin::~AutoLevelPlugin() {
-  event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+  GZ_COMPAT_DISCONNECT_WORLD_UPDATE_BEGIN(updateConnection_);
 }
 
 void AutoLevelPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
@@ -74,14 +75,14 @@ void AutoLevelPlugin::Reset()
 // Return the Sign of the argument
 void AutoLevelPlugin::OnUpdate(const common::UpdateInfo & _info)
 {
-    math::Vector3 global_pose = model_link->GetWorldCoGPose().rot.GetAsEuler();
-    math::Vector3 relative_pose = model_link->GetRelativePose().rot.GetAsEuler();
+    GazeboVector global_pose = GZ_COMPAT_GET_EULER(GZ_COMPAT_GET_ROT(GZ_COMPAT_GET_WORLD_COG_POSE(model_link)));
+    GazeboVector relative_pose = GZ_COMPAT_GET_EULER(GZ_COMPAT_GET_ROT(GZ_COMPAT_GET_RELATIVE_POSE(model_link)));
 
-    double roll = -global_pose.x;
-    double pitch =  -global_pose.y;
-    double yaw = -relative_pose.z;
+    double roll = -GZ_COMPAT_GET_X(global_pose);
+    double pitch =  -GZ_COMPAT_GET_Y(global_pose);
+    double yaw = -GZ_COMPAT_GET_Z(relative_pose);
 
-    sensor_link->SetRelativePose(math::Pose(0, 0, -.50, roll, pitch, yaw));
+    sensor_link->SetRelativePose(GazeboPose(0, 0, -.50, roll, pitch, yaw));
 
 }
 

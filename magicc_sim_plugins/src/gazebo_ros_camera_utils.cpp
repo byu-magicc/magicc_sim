@@ -42,6 +42,8 @@
 
 #include "gazebo_plugins/gazebo_ros_camera_utils.h"
 
+#include "magicc_sim_plugins/gz_compat.h"
+
 namespace gazebo
 {
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +125,7 @@ void GazeboRosCameraUtils::Load(sensors::SensorPtr _parent,
 
   std::stringstream ss;
   this->robot_namespace_ =  GetRobotNamespace(_parent, _sdf, "Camera");
-  
+
   this->image_topic_name_ = "image_raw";
   if (this->sdf->HasElement("imageTopicName"))
     this->image_topic_name_ = this->sdf->Get<std::string>("imageTopicName");
@@ -290,7 +292,7 @@ void GazeboRosCameraUtils::LoadThread()
   }
 
   this->itnode_ = new image_transport::ImageTransport(*this->rosnode_);
-  
+
   // resolve tf prefix
   this->tf_prefix_ = tf::getPrefixParam(*this->rosnode_);
   if(this->tf_prefix_.empty()) {
@@ -301,8 +303,8 @@ void GazeboRosCameraUtils::LoadThread()
 
   ROS_INFO("Camera Plugin (ns = %s)  <tf_prefix_>, set to \"%s\"",
              this->robot_namespace_.c_str(), this->tf_prefix_.c_str());
-  
-  
+
+
   if (!this->camera_name_.empty())
   {
     dyn_srv_ =
@@ -492,7 +494,8 @@ void GazeboRosCameraUtils::Init()
   else
   {
     // check against float precision
-    if (!gazebo::math::equal(this->focal_length_, computed_focal_length))
+    bool compare = GZ_COMPAT_EQUAL(this->focal_length_, computed_focal_length);
+    if (!compare)
     {
       ROS_WARN("The <focal_length>[%f] you have provided for camera_ [%s]"
                " is inconsistent with specified image_width [%d] and"
@@ -634,7 +637,7 @@ void GazeboRosCameraUtils::PublishCameraInfo()
         this->sensor_update_time_ = this->parentSensor_->GetLastUpdateTime();
     # endif
 
-    common::Time cur_time = this->world_->GetSimTime();
+    common::Time cur_time = GZ_COMPAT_GET_SIM_TIME(this->world_);
     if (cur_time - this->last_info_update_time_ >= this->update_period_)
     {
       this->PublishCameraInfo(this->camera_info_pub_);
