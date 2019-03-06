@@ -15,14 +15,14 @@
  */
 
 #include "magicc_sim_plugins/gimbal_plugin.h"
+#include "magicc_sim_plugins/gz_compat.h"
 
 namespace gazebo {
 
 GimbalPlugin::GimbalPlugin() : ModelPlugin() {}
 
 GimbalPlugin::~GimbalPlugin() {
-  updateConnection_.reset();
-  // event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+  GZ_COMPAT_DISCONNECT_WORLD_UPDATE_BEGIN(updateConnection_);
   if (nh_) {
     nh_->shutdown();
     delete nh_;
@@ -137,15 +137,15 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 //  yaw_joint_->SetParam("max_force", 0, 10);
 //  roll_joint_->SetParam("max_force", 0, 10);
 #else
+  roll_joint_->SetMaxForce(0, 10);
   pitch_joint_->SetMaxForce(0, 10);
   yaw_joint_->SetMaxForce(0, 10);
-  roll_joint_->SetMaxForce(0, 10);
 #endif
 
   // Set the axes of the gimbal
-  yaw_joint_->SetAxis(0, ignition::math::Vector3d(0, 0, 1));
-  pitch_joint_->SetAxis(0, ignition::math::Vector3d(0, 1, 0));
-  roll_joint_->SetAxis(0, ignition::math::Vector3d(1, 0, 0));
+  roll_joint_->SetAxis(0, GazeboVector(1, 0, 0));
+  pitch_joint_->SetAxis(0, GazeboVector(0, 1, 0));
+  yaw_joint_->SetAxis(0, GazeboVector(0, 0, 1));
 
   // Initialize Time
   this->Reset();
@@ -167,19 +167,11 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   // Perform Control if auto stabilize flag is on
   if(auto_stabilize_)
   {
-  #if GAZEBO_MAJOR_VERSION >= 8
-    ignition::math::Pose3d W_pose_W_C = link_->WorldCoGPose();
-    ignition::math::Vector3d euler_angles = W_pose_W_C.Rot().Euler();
-    double phi = euler_angles.X();
-    double theta = -euler_angles.Y();
-    double psi = -euler_angles.Z();
-  #else
-    math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-    math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
-    double phi = euler_angles.x;
-    double theta = -euler_angles.y;
-    double psi = -euler_angles.z;
-  #endif
+    GazeboPose W_pose_W_C = GZ_COMPAT_GET_WORLD_COG_POSE(link_);
+    GazeboVector euler_angles = GZ_COMPAT_GET_EULER(GZ_COMPAT_GET_ROT(W_pose_W_C));
+    double phi = GZ_COMPAT_GET_X(euler_angles);
+    double theta = -GZ_COMPAT_GET_Y(euler_angles);
+    double psi = -GZ_COMPAT_GET_Z(euler_angles);
     
     yaw_desired_ = 0;
     pitch_desired_ = theta;
@@ -192,25 +184,14 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   roll_actual_ = roll_filter_->updateFilter(roll_desired_, dt);
 
   // Set the Joint Angles to the Filtered angles
-#if GAZEBO_MAJOR_VERSION > 5
-  yaw_joint_->SetPosition(0, yaw_actual_);
-  pitch_joint_->SetPosition(0, pitch_actual_);
-  roll_joint_->SetPosition(0, roll_actual_);
-#else
-  yaw_joint_->SetAngle(0, math::Angle(yaw_actual_));
-  pitch_joint_->SetAngle(0, math::Angle(pitch_actual_));
-  roll_joint_->SetAngle(0, math::Angle(roll_actual_));
-#endif
+  GZ_COMPAT_SET_POSITION(roll_joint_, 0, roll_actual_);
+  GZ_COMPAT_SET_POSITION(pitch_joint_, 0, pitch_actual_);
+  GZ_COMPAT_SET_POSITION(yaw_joint_, 0, yaw_actual_);
 
   // Publish ROS message of actual angles
   geometry_msgs::Vector3Stamped angles_msg;
-#if GAZEBO_MAJOR_VERSION >= 8
-  angles_msg.header.stamp.sec = world_->SimTime().sec;
-  angles_msg.header.stamp.nsec = world_->SimTime().nsec;
-#else
-  angles_msg.header.stamp.sec = world_->GetSimTime().sec;
-  angles_msg.header.stamp.nsec = world_->GetSimTime().nsec;
-#endif  
+  angles_msg.header.stamp.sec = GZ_COMPAT_GET_SIM_TIME(world_).sec;
+  angles_msg.header.stamp.nsec = GZ_COMPAT_GET_SIM_TIME(world_).nsec; 
   angles_msg.vector.x = roll_actual_;
   angles_msg.vector.y = pitch_actual_;
   angles_msg.vector.z = yaw_actual_;

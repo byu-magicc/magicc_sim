@@ -15,6 +15,7 @@
  */
 
 #include "magicc_sim_plugins/world_utilities.h"
+#include "magicc_sim_plugins/gz_compat.h"
 #include "gazebo/physics/World.hh"
 #include "gazebo/physics/Model.hh"
 #include <gazebo/gazebo.hh>
@@ -65,11 +66,7 @@ void WorldUtilities::stepCommandCallback(const std_msgs::Int16 &msg)
 {
     this->world_->SetPaused(true);
 
-    # if GAZEBO_MAJOR_VERSION >= 3
-        this->world_->Step(msg.data);
-    # else
-        this->world_->StepWorld(msg.data);
-    # endif
+    GZ_COMPATE_STEP_WORLD(this->world_, msg.data);
 }
 
 GZ_REGISTER_WORLD_PLUGIN(WorldUtilities)

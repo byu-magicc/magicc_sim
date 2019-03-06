@@ -23,6 +23,7 @@
 */
 
 #include "gazebo_plugins/gazebo_ros_camera.h"
+#include "magicc_sim_plugins/gz_compat.h"
 
 #include <string>
 
@@ -77,11 +78,8 @@ void GazeboRosCamera::OnNewFrame(const unsigned char *_image,
     const std::string &_format)
 {
 
-  # if GAZEBO_MAJOR_VERSION >= 7
-      this->sensor_update_time_ = this->parentSensor_->LastUpdateTime();
-  # else
-      this->sensor_update_time_ = this->parentSensor_->GetLastUpdateTime();
-  # endif
+  this->sensor_update_time_ = GZ_COMPAT_GET_LAST_UPDATE_TIME(this->parentSensor_);
+
 
   if (!this->parentSensor->IsActive())
   {
