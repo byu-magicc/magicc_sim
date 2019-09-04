@@ -47,6 +47,12 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Eigen_INCLUDE_DIRS})
 
+add_library(altimeter_plugin
+  src/altimeter_plugin.cpp
+  include/magicc_sim_plugins/altimeter_plugin.h)
+target_link_libraries(altimeter_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(altimeter_plugin ${catkin_EXPORTED_TARGETS})
+
 add_library(gimbal_plugin
   src/gimbal_plugin.cpp
   include/magicc_sim_plugins/gimbal_plugin.h)
